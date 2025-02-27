@@ -4,14 +4,29 @@ spring:
   application:
     name: kcjs-cloud-boot-gateway
   cloud:
-    sentinel:
-      transport:
-        dashboard: localhost:8080
-      eager: true
+    gateway:
+      routes:
+        - id: kcjs-cloud-dubbo-consumer
+          uri: lb://kcjs-cloud-dubbo-consumer
+          predicates:
+            - Path=/api/**
+          filters:
+            - RewritePath=/api/(?<segment>.*), /$\{segment}
     nacos:
       discovery:
         server-addr: localhost:8848
+    sentinel:
+      transport:
+        dashboard: localhost:8000
+      eager: true
   config:
     import:
       - nacos:kcjs-cloud-boot-gateway.yaml?refreshEnabled=true
       - nacos:kcjs-cloud-common.yaml?refreshEnabled=true
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "routes,gateway,health,info,sentinel"
