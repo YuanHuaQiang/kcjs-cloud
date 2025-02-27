@@ -1,0 +1,14 @@
+server:
+  port: 9001
+spring:
+  application:
+    name: kcjs-cloud-dubbo-consumer
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+  config:
+    server-addr: localhost:8848
+    import:
+      - nacos:kcjs-cloud-dubbo-consumer.yaml?refreshEnabled=true
+      - nacos:kcjs-cloud-common.yaml?refreshEnabled=true

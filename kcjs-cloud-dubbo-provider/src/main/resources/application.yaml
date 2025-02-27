@@ -1,0 +1,10 @@
+server:
+  port: 9000
+spring:
+  application:
+    name: kcjs-cloud-dubbo-provider
+  config:
+    server-addr: localhost:8848
+    import:
+      - nacos:kcjs-cloud-dubbo-provider.yaml?refreshEnabled=true
+      - nacos:kcjs-cloud-common.yaml?refreshEnabled=true
