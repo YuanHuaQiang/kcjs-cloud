@@ -30,3 +30,7 @@ management:
     web:
       exposure:
         include: "routes,gateway,health,info,sentinel"
+
+
+jwt:
+  secret: zEPgB5gSZQq2QXD7N+r7A87wb3tOUYr0ia7uLdqRnYXpazJ9vZxDObVOgThN66l9lnaSMIo+BR1uqbeA7jh/Ow==
