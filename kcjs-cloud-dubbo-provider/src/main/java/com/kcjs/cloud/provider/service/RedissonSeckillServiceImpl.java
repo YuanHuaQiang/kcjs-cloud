@@ -2,6 +2,7 @@ package com.kcjs.cloud.provider.service;
 
 import com.kcjs.cloud.api.RedissonSeckillService;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -10,6 +11,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @DubboService
 public class RedissonSeckillServiceImpl implements RedissonSeckillService {
 
@@ -45,13 +47,15 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
                 return "库存不足";
             }
 
-            redisTemplate.opsForValue().set(STOCK_KEY, String.valueOf(stock - 1));
+            // 使用原子操作减少库存
+            redisTemplate.opsForValue().decrement(STOCK_KEY);
 
-            System.out.println("用户 " + userId + " 秒杀成功，剩余库存：" + (stock - 1));
+            log.info("用户 {} 秒杀成功，剩余库存：{}", userId, stock - 1);
             return "恭喜秒杀成功！";
 
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error("秒杀过程中发生中断", e);
+            Thread.currentThread().interrupt(); // 重新设置中断状态
             return "系统异常";
         } finally {
             if (lock.isHeldByCurrentThread()) {
@@ -59,4 +63,5 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
             }
         }
     }
+
 }
