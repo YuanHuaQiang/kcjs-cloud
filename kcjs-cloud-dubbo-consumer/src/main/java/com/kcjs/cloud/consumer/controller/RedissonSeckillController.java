@@ -1,6 +1,6 @@
 package com.kcjs.cloud.consumer.controller;
 
-import com.kcjs.cloud.provider.service.RedissonSeckillService;
+import com.kcjs.cloud.api.RedissonSeckillService;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,7 +15,7 @@ public class RedissonSeckillController {
     private RedissonSeckillService redissonSeckillService;
 
     @GetMapping("/buy")
-    public String seckill(@RequestParam Long userId) {
+    public String seckill( Long userId) {
         return redissonSeckillService.seckillProduct(userId);
     }
 }

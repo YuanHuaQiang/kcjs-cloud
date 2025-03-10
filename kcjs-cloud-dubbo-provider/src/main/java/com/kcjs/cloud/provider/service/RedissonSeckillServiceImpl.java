@@ -1,5 +1,7 @@
 package com.kcjs.cloud.provider.service;
 
+import com.kcjs.cloud.api.RedissonSeckillService;
+import jakarta.annotation.PostConstruct;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -9,7 +11,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import java.util.concurrent.TimeUnit;
 
 @DubboService
-public class RedissonSeckillService {
+public class RedissonSeckillServiceImpl implements RedissonSeckillService {
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -19,6 +21,12 @@ public class RedissonSeckillService {
 
     private static final String STOCK_KEY = "seckill:stock:1001";
 
+    @PostConstruct
+    public void init() {
+        redisTemplate.opsForValue().set(STOCK_KEY, "100");
+    }
+
+    @Override
     public String seckillProduct(Long userId) {
         RLock lock = redissonClient.getLock("lock:product:1001");
 
