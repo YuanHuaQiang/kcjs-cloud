@@ -2,26 +2,28 @@ package com.kcjs.cloud.provider.service;
 
 import com.kcjs.cloud.api.RedissonSeckillService;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.kafka.core.KafkaTemplate;
 
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @DubboService
+@RequiredArgsConstructor
 public class RedissonSeckillServiceImpl implements RedissonSeckillService {
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
-
-    @Autowired
-    private RedissonClient redissonClient;
+    private final StringRedisTemplate redisTemplate;
+    private final RedissonClient redissonClient;
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
     private static final String STOCK_KEY = "seckill:stock:1001";
+
 
     @PostConstruct
     public void init() {
@@ -44,11 +46,13 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
             int stock = stockStr == null ? 0 : Integer.parseInt(stockStr);
 
             if (stock <= 0) {
+                log.info("用户 {} 库存不足",userId);
                 return "库存不足";
             }
 
             // 使用原子操作减少库存
             redisTemplate.opsForValue().decrement(STOCK_KEY);
+            kafkaTemplate.send("test-topic", String.valueOf(userId));
 
             log.info("用户 {} 秒杀成功，剩余库存：{}", userId, stock - 1);
             return "恭喜秒杀成功！";
