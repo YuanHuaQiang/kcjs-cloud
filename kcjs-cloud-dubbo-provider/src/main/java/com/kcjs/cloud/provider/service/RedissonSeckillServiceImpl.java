@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 
@@ -23,7 +22,8 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
     private final KafkaTemplate<String, String> kafkaTemplate;
 
     private static final String STOCK_KEY = "seckill:stock:1001";
-
+    private static final String TIME_WINDOW_KEY_PREFIX = "seckill:time-window:";
+    private static final long TIME_WINDOW_DURATION = 60; // 时间窗口持续时间，单位秒
 
     @PostConstruct
     public void init() {
@@ -42,17 +42,28 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
                 return "系统繁忙，请稍后重试";
             }
 
+            // 检查时间窗口
+            String timeWindowKey = TIME_WINDOW_KEY_PREFIX + userId;
+            if (Boolean.TRUE.equals(redisTemplate.hasKey(timeWindowKey))) {
+                log.info("用户 {} 在时间窗口内已秒杀过", userId);
+                return "您已秒杀过，请稍后再试";
+            }
+
             String stockStr = redisTemplate.opsForValue().get(STOCK_KEY);
             int stock = stockStr == null ? 0 : Integer.parseInt(stockStr);
 
             if (stock <= 0) {
-                log.info("用户 {} 库存不足",userId);
+                log.info("用户 {} 库存不足", userId);
                 return "库存不足";
             }
 
             // 使用原子操作减少库存
             redisTemplate.opsForValue().decrement(STOCK_KEY);
             kafkaTemplate.send("test-topic", String.valueOf(userId));
+
+            // 设置时间窗口
+            redisTemplate.opsForValue().set(timeWindowKey, "1");
+            redisTemplate.expire(timeWindowKey, TIME_WINDOW_DURATION, TimeUnit.SECONDS);
 
             log.info("用户 {} 秒杀成功，剩余库存：{}", userId, stock - 1);
             return "恭喜秒杀成功！";
@@ -67,5 +78,4 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
             }
         }
     }
-
 }
