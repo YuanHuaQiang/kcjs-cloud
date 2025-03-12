@@ -37,7 +37,7 @@ public class JwtAuthFilter implements WebFilter {
             // 解析 JWT
             String token = authHeader.substring(7);
             Claims claims = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token).getBody();
-            System.out.println("当前用户：" + claims.getSubject());
+            //System.out.println("当前用户：" + claims.getSubject());
 
             // 可将用户信息添加到请求头，传递给微服务
             ServerHttpRequest mutatedRequest = exchange.getRequest()

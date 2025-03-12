@@ -18,6 +18,20 @@ spring:
     sentinel:
       transport:
         dashboard: localhost:8000
+        port: 8719
+      datasource:
+        gw-flow:
+          nacos:
+            server-addr: localhost:8848
+            data-id: sentinel-gateway-flow-rules
+            group-id: DEFAULT_GROUP
+            rule-type: gw-flow
+        gw-api:
+          nacos:
+            server-addr: localhost:8848
+            data-id: sentinel-gateway-api-group
+            group-id: DEFAULT_GROUP
+            rule-type: gw-api-group
       eager: true
   config:
     import:
