@@ -8,7 +8,6 @@ import org.apache.dubbo.config.annotation.DubboService;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.kafka.core.KafkaTemplate;
 
 import java.util.concurrent.TimeUnit;
 
@@ -19,7 +18,6 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
 
     private final StringRedisTemplate redisTemplate;
     private final RedissonClient redissonClient;
-    private final KafkaTemplate<String, String> kafkaTemplate;
 
     private static final String STOCK_KEY = "seckill:stock:1001";
     private static final String TIME_WINDOW_KEY_PREFIX = "seckill:time-window:";
@@ -59,7 +57,6 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
 
             // 使用原子操作减少库存
             redisTemplate.opsForValue().decrement(STOCK_KEY);
-            kafkaTemplate.send("test-topic", String.valueOf(userId));
 
             // 设置时间窗口
             redisTemplate.opsForValue().set(timeWindowKey, "1");
