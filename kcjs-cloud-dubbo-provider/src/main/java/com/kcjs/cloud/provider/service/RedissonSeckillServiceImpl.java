@@ -1,12 +1,14 @@
 package com.kcjs.cloud.provider.service;
 
 import com.kcjs.cloud.api.RedissonSeckillService;
+import com.kcjs.cloud.provider.config.RabbitMQConfig;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.concurrent.TimeUnit;
@@ -18,6 +20,7 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
 
     private final StringRedisTemplate redisTemplate;
     private final RedissonClient redissonClient;
+    private final RabbitTemplate rabbitTemplate;
 
     private static final String STOCK_KEY = "seckill:stock:1001";
     private static final String TIME_WINDOW_KEY_PREFIX = "seckill:time-window:";
@@ -25,7 +28,7 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
 
     @PostConstruct
     public void init() {
-        redisTemplate.opsForValue().set(STOCK_KEY, "100");
+        redisTemplate.opsForValue().set(STOCK_KEY, "10000");
     }
 
     @Override
@@ -57,6 +60,7 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
 
             // 使用原子操作减少库存
             redisTemplate.opsForValue().decrement(STOCK_KEY);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.NORMAL_EXCHANGE, "seckill:stock:1001", userId+"");
 
             // 设置时间窗口
             redisTemplate.opsForValue().set(timeWindowKey, "1");
