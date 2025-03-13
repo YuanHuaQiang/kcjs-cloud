@@ -32,6 +32,13 @@ spring:
             data-id: sentinel-gateway-api-group
             group-id: DEFAULT_GROUP
             rule-type: gw-api-group
+        degrade:
+          nacos:
+            server-addr: localhost:8848
+            dataId: sentinel-degrade-rule
+            groupId: DEFAULT_GROUP
+            rule-type: degrade
+
       eager: true
   config:
     import:
