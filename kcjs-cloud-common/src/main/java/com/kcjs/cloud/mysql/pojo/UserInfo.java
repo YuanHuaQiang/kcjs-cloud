@@ -27,6 +27,6 @@ public class UserInfo implements Serializable {
     @Column(name = "create_time", insertable = false, updatable = false)
     private LocalDateTime createTime;
 
-    @Column(name = "update_time")
+    @Column(name = "update_time", updatable = false)
     private LocalDateTime updateTime;
 }
