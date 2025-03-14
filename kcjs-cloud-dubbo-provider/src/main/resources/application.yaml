@@ -8,9 +8,3 @@ spring:
     import:
       - nacos:kcjs-cloud-dubbo-provider.yaml?refreshEnabled=true
       - nacos:kcjs-cloud-common.yaml?refreshEnabled=true
-
-
-logging:
-  level:
-    org.hibernate.SQL: off
-    org.hibernate.type.descriptor.sql.BasicBinder: off
