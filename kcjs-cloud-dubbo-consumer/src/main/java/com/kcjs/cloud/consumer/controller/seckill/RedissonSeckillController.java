@@ -1,4 +1,4 @@
-package com.kcjs.cloud.consumer.controller;
+package com.kcjs.cloud.consumer.controller.seckill;
 
 import com.kcjs.cloud.api.RedissonSeckillService;
 import org.apache.dubbo.config.annotation.DubboReference;

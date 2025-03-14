@@ -1,8 +1,7 @@
 package com.kcjs.cloud.gateway.controller;
 
 import com.kcjs.cloud.gateway.utils.JwtUtil;
-import com.kcjs.cloud.pojo.LoginRequest;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.kcjs.cloud.oracle.pojo.LoginRequest;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

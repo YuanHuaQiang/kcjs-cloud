@@ -22,10 +22,6 @@
             <artifactId>kcjs-cloud-dubbo-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.kcjs.cloud</groupId>
-            <artifactId>kcjs-cloud-dubbo-provider</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-spring-boot-starter</artifactId>
         </dependency>

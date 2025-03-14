@@ -1,8 +1,8 @@
-package com.kcjs.cloud.mapper;
+package com.kcjs.cloud.oracle.mapper;
 
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.kcjs.cloud.pojo.BdCity;
+import com.kcjs.cloud.oracle.pojo.BdCity;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Component;

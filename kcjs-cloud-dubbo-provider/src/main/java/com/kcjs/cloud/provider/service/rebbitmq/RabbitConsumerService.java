@@ -1,4 +1,4 @@
-package com.kcjs.cloud.provider.service;
+package com.kcjs.cloud.provider.service.rebbitmq;
 
 import com.kcjs.cloud.provider.config.RabbitMQConfig;
 import com.rabbitmq.client.Channel;

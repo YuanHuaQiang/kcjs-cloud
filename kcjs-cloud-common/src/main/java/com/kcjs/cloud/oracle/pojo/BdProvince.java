@@ -1,4 +1,4 @@
-package com.kcjs.cloud.pojo;
+package com.kcjs.cloud.oracle.pojo;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -10,11 +10,11 @@ import java.util.Date;
 
 /**
  * 
- * @TableName T_BD_REGION
+ * @TableName T_BD_PROVINCE
  */
-@TableName(value ="T_BD_REGION")
+@TableName(value ="T_BD_PROVINCE")
 @Data
-public class BdRegion implements Serializable {
+public class BdProvince implements Serializable {
     /**
      * 
      */
@@ -64,7 +64,7 @@ public class BdRegion implements Serializable {
     /**
      * 
      */
-    private String fcityid;
+    private String fcountryid;
 
     /**
      * 
@@ -95,6 +95,22 @@ public class BdRegion implements Serializable {
      * 
      */
     private Integer fdeletedstatus;
+
+    /**
+     * 
+     */
+    private String fareaid;
+
+
+    /**
+     * 省份全称
+     */
+    private String fullName;
+
+    /**
+     * 省份全程拼音
+     */
+    private String fullNamePy;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

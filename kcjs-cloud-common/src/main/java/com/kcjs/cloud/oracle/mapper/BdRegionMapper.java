@@ -1,8 +1,8 @@
-package com.kcjs.cloud.mapper;
+package com.kcjs.cloud.oracle.mapper;
 
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.kcjs.cloud.pojo.BdRegion;
+import com.kcjs.cloud.oracle.pojo.BdRegion;
 import org.springframework.stereotype.Component;
 
 /**

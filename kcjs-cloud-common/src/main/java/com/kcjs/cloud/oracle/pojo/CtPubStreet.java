@@ -1,4 +1,4 @@
-package com.kcjs.cloud.pojo;
+package com.kcjs.cloud.oracle.pojo;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;

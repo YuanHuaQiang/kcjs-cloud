@@ -1,4 +1,4 @@
-package com.kcjs.cloud.provider.service;
+package com.kcjs.cloud.provider.service.seckill;
 
 import com.kcjs.cloud.api.RedissonSeckillService;
 import com.kcjs.cloud.provider.config.RabbitMQConfig;

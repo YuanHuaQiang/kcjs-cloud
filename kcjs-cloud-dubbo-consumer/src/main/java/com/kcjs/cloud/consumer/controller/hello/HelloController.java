@@ -1,4 +1,4 @@
-package com.kcjs.cloud.consumer.controller;
+package com.kcjs.cloud.consumer.controller.hello;
 
 
 import com.kcjs.cloud.api.HelloService;

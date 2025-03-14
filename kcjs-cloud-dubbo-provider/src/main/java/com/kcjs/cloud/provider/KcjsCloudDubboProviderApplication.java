@@ -12,7 +12,6 @@ import org.springframework.retry.annotation.EnableRetry;
 @EnableDubbo
 @EnableDiscoveryClient
 @EnableRetry
-@MapperScan("com.kcjs.**.mapper")
 @ComponentScan(basePackages = {"com.kcjs"})
 public class KcjsCloudDubboProviderApplication {
 

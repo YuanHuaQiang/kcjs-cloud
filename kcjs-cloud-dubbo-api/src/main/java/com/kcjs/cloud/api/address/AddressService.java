@@ -1,6 +1,7 @@
 package com.kcjs.cloud.api.address;
 
-import com.kcjs.cloud.pojo.*;
+
+import com.kcjs.cloud.oracle.pojo.*;
 
 import java.util.List;
 

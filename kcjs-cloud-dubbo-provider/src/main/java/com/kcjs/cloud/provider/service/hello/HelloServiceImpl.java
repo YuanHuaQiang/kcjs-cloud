@@ -1,4 +1,4 @@
-package com.kcjs.cloud.provider.service;
+package com.kcjs.cloud.provider.service.hello;
 
 import com.kcjs.cloud.api.HelloService;
 import org.apache.dubbo.config.annotation.DubboService;
