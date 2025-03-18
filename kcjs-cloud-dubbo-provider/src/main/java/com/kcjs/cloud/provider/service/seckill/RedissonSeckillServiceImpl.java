@@ -49,14 +49,14 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
             boolean locked = lock.tryLock(2, 10, TimeUnit.SECONDS);
 
             if (!locked) {
-                throw new BusinessException("系统繁忙，请稍后重试");
+                return Result.fail("系统繁忙，请稍后重试");
             }
 
             // 检查时间窗口
             String timeWindowKey = TIME_WINDOW_KEY_PREFIX + userId;
             if (Boolean.TRUE.equals(redisTemplate.hasKey(timeWindowKey))) {
                 log.info("用户 {} 在时间窗口内已秒杀过", userId);
-                throw new BusinessException("您已秒杀过，请稍后再试");
+                return Result.fail("您已秒杀过，请稍后再试");
             }
 
             String stockStr = redisTemplate.opsForValue().get(STOCK_KEY);
@@ -64,12 +64,12 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
 
             if (stock <= 0) {
                 log.info("用户 {} 库存不足", userId);
-                throw new BusinessException("库存不足");
+                return Result.fail("库存不足");
             }
 
             // 使用原子操作减少库存
             redisTemplate.opsForValue().decrement(STOCK_KEY);
-            rabbitTemplate.convertAndSend(RabbitMQConfig.NORMAL_EXCHANGE, STOCK_KEY, userId+"");
+            rabbitTemplate.convertAndSend(RabbitMQConfig.NORMAL_EXCHANGE, STOCK_KEY, userId+":"+1001);
 
             // 设置时间窗口
             redisTemplate.opsForValue().set(timeWindowKey, "1");
@@ -81,7 +81,7 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
         } catch (InterruptedException e) {
             log.error("秒杀过程中发生中断", e);
             Thread.currentThread().interrupt(); // 重新设置中断状态
-            throw new BusinessException("系统异常");
+            return Result.fail("系统异常");
         } finally {
             if (lock.isHeldByCurrentThread()) {
                 lock.unlock();

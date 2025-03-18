@@ -10,7 +10,7 @@
     </TestPlan>
     <hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group">
-        <intProp name="ThreadGroup.num_threads">200</intProp>
+        <intProp name="ThreadGroup.num_threads">2000</intProp>
         <intProp name="ThreadGroup.ramp_time">1</intProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
@@ -46,7 +46,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
                 <stringProp name="Header.name">Authorization</stringProp>
-                <stringProp name="Header.value">Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc0MjI4NjI3MiwiZXhwIjoxNzQyMjg5ODcyfQ.Nx02PxfKXNxxZldaC557UY3BxCtc6fJe0_UdUEnFKXU</stringProp>
+                <stringProp name="Header.value">Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc0MjMxMTczNSwiZXhwIjoxNzQyMzE1MzM1fQ.PsRKEQwjmuSfOlsvq5Ahiu9XN8d9u0Toyk1ychMZKKo</stringProp>
               </elementProp>
             </collectionProp>
           </HeaderManager>

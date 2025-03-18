@@ -1,4 +1,4 @@
-package com.kcjs.cloud.provider.config;
+package com.kcjs.cloud.mq.config;
 
 import org.springframework.amqp.core.*;
 import org.springframework.context.annotation.Bean;
