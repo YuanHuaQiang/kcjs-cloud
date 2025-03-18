@@ -22,30 +22,10 @@ public class RedissonSeckillController {
 
     @DubboReference
     private RedissonSeckillService redissonSeckillService;
-    @DubboReference
-    private StorageService storageService;
-    @DubboReference
-    private OrderService orderService;
-    @DubboReference
-    private AccountService accountService;
+
 
     @GetMapping("/buy")
-    @GlobalTransactional(name = "seckill-global-tx", rollbackFor = Exception.class)
     public Result<String> seckill(@RequestParam Long userId) {
-        Result<String> stringResult = redissonSeckillService.seckillProduct(userId);
-
-        // 秒杀成功继续业务
-        storageService.decrease(1001L, 1);
-
-        Order order = new Order();
-        order.setUserId(userId);
-        order.setProductId(1001L);
-        order.setCount(1);
-        order.setAmount(new BigDecimal("100"));
-        orderService.createOrder(order);
-
-        accountService.decrease(userId, new BigDecimal("100"));
-
-        return stringResult;
+        return  redissonSeckillService.seckillProduct(userId);
     }
 }

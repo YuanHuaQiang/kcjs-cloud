@@ -13,6 +13,7 @@
         <module>kcjs-cloud-dubbo-api</module>
         <module>kcjs-cloud-dubbo-provider</module>
         <module>kcjs-cloud-dubbo-consumer</module>
+        <module>kcjs-cloud-mq-consumer</module>
         <module>kcjs-cloud-boot-gateway</module>
     </modules>
 
