@@ -1,6 +1,8 @@
 package com.kcjs.cloud.api;
 
+import com.kcjs.cloud.result.Result;
+
 public interface RedissonSeckillService {
 
-     String seckillProduct(Long userId);
+     Result<String> seckillProduct(Long userId);
 }
