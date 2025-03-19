@@ -3,6 +3,7 @@ package com.kcjs.cloud.mq.service.rebbitmq;
 import com.kcjs.cloud.api.account.AccountService;
 import com.kcjs.cloud.api.order.OrderService;
 import com.kcjs.cloud.api.storage.StorageService;
+import com.kcjs.cloud.exception.BusinessException;
 import com.kcjs.cloud.mq.config.RabbitMQConfig;
 import com.kcjs.cloud.mysql.pojo.Order;
 import com.rabbitmq.client.Channel;
@@ -68,6 +69,7 @@ public class SeckillRabbitConsumerService {
         order = orderService.saveOrder(order);//若为先创建后支付模式则扣库存和创建订单不需要事物管理
 
 
+        //不走事务
         accountService.decrease(Long.valueOf(userId), amount);
 
         order.setStatus(1);//若余额支付成功，则修改订单状态为已支付
@@ -79,6 +81,7 @@ public class SeckillRabbitConsumerService {
 
     /**
      * 重试完了还是失败进入
+     * Recover需要与Retryable 参数一致
      */
     @Recover
     public void recover(Exception e, Message message, Channel channel) throws IOException {
@@ -104,7 +107,7 @@ public class SeckillRabbitConsumerService {
         String productId = split[1];
 
         //库存加回去
-        stringRedisTemplate.opsForValue().increment(productId);
+        stringRedisTemplate.opsForValue().increment("seckill:stock:"+productId);
 
         // 这里可以记录日志、报警等
         channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);

@@ -26,7 +26,7 @@ public class AccountServiceImpl implements AccountService {
 //            throw new RuntimeException("账户不存在");
             account = new Account();
             account.setUserId(userId);
-            account.setResidue(BigDecimal.valueOf(RandomGenerator.getDefault().nextDouble(10000)));
+            account.setResidue(BigDecimal.valueOf(RandomGenerator.getDefault().nextDouble(1000)));
             account.setTotal(account.getResidue());
             account.setUsed(BigDecimal.ZERO);
             accountRepository.save(account);

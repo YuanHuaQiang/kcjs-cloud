@@ -35,8 +35,8 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
 
     @PostConstruct
     public void init() {
-        redisTemplate.opsForValue().set(STOCK_KEY, "10000");
-        storageService.save(1001L,10000);
+        redisTemplate.opsForValue().set(STOCK_KEY, "2000");
+        storageService.save(1001L,2000);
     }
 
     @Override
