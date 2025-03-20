@@ -12,3 +12,4 @@ spring:
     import:
       - nacos:kcjs-cloud-dubbo-consumer.yaml?refreshEnabled=true
       - nacos:kcjs-cloud-common.yaml?refreshEnabled=true
+      - nacos:seata.yaml

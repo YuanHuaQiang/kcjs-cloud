@@ -1,0 +1,14 @@
+server:
+  port: 9000
+spring:
+  application:
+    name: kcjs-cloud-dubbo-sp-provider
+  datasource:
+    driver-class-name: org.apache.shardingsphere.driver.ShardingSphereDriver
+    url: jdbc:shardingsphere:classpath:shading-auto-tables-algorithm.yaml
+  config:
+    server-addr: localhost:8848
+    import:
+      - nacos:kcjs-cloud-dubbo-sp-provider.yaml?refreshEnabled=true
+      - nacos:kcjs-cloud-common.yaml?refreshEnabled=true
+      - nacos:seata.yaml

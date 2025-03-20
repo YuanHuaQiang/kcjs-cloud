@@ -8,3 +8,4 @@ spring:
     import:
       - nacos:kcjs-cloud-mq-consumer.yaml?refreshEnabled=true
       - nacos:kcjs-cloud-common.yaml?refreshEnabled=true
+      - nacos:seata.yaml

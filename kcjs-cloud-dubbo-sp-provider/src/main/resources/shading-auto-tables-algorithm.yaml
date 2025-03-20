@@ -1,0 +1,43 @@
+dataSources:
+  ds1:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    jdbcUrl: jdbc:mysql://localhost:3306/kcjs-cloud?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&allowMultiQueries=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: '123456'
+    connectionTimeoutMilliseconds: 30000
+    idleTimeoutMilliseconds: 60000
+    maxLifetimeMilliseconds: 1800000
+    maxPoolSize: 50
+    minPoolSize: 1
+rules:
+  - !SHARDING
+    autoTables:
+      # 取模
+      t_auto_order_mod:
+        actualDataSources: kcjs-cloud
+        shardingStrategy:
+          standard:
+            shardingColumn: user_id
+            shardingAlgorithmName: auto_order_mod
+        # 分布式序列策略
+        keyGenerateStrategy:
+          # 自增列名称，缺省表示不使用自增主键生成器
+          column: id
+          # 分布式序列算法名称
+          keyGeneratorName: snowflake
+    # 分片算法配置
+    shardingAlgorithms:
+      # 取模
+      auto_order_mod:
+        type: MOD
+        props:
+          sharding-count: 4
+    # 分布式序列算法配置（如果是自动生成的，在插入数据的sql中就不要传id，null也不行，直接插入字段中就不要有主键的字段）
+    keyGenerators:
+      # 分布式序列算法名称
+      snowflake:
+        # 分布式序列算法类型
+        type: SNOWFLAKE
+props:
+  sql-show: true

@@ -8,3 +8,5 @@ spring:
     import:
       - nacos:kcjs-cloud-dubbo-provider.yaml?refreshEnabled=true
       - nacos:kcjs-cloud-common.yaml?refreshEnabled=true
+      - nacos:double-datasource.yaml?refreshEnabled=true
+      - nacos:seata.yaml
