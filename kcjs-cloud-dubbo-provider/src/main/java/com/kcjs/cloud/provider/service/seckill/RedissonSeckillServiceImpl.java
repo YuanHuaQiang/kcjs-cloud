@@ -11,10 +11,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -69,11 +71,14 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
 
             // 使用原子操作减少库存
             redisTemplate.opsForValue().decrement(STOCK_KEY);
-            rabbitTemplate.convertAndSend(RabbitMQConfig.NORMAL_EXCHANGE, STOCK_KEY, userId+":"+1001);
-
             // 设置时间窗口
             redisTemplate.opsForValue().set(timeWindowKey, "1");
             redisTemplate.expire(timeWindowKey, TIME_WINDOW_DURATION, TimeUnit.SECONDS);
+
+
+            String messageId = UUID.randomUUID().toString();
+            CorrelationData correlationData = new CorrelationData(messageId);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.NORMAL_EXCHANGE, STOCK_KEY, userId+":"+1001,correlationData);
 
             log.info("用户 {} 秒杀成功，剩余库存：{}", userId, stock - 1);
             return Result.success("恭喜秒杀成功！");
