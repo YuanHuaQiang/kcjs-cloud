@@ -10,7 +10,7 @@ import java.io.Serializable;
  */
 @Data
 @Entity
-@Table(name = "orders")
+@Table(name = "message_log")
 public class MessageLog implements Serializable {
 
     @Id

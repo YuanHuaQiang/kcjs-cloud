@@ -15,18 +15,17 @@ public class UserInfo implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "username", nullable = false, length = 50)
+    @Column( nullable = false, length = 50)
     private String username;
 
-    @Column(name = "email", length = 100)
+    @Column( length = 100)
     private String email;
 
-    @Column(name = "age")
     private Integer age;
 
-    @Column(name = "create_time", insertable = false, updatable = false)
+    @Column(insertable = false, updatable = false)
     private LocalDateTime createTime;
 
-    @Column(name = "update_time", updatable = false)
+    @Column( updatable = false)
     private LocalDateTime updateTime;
 }

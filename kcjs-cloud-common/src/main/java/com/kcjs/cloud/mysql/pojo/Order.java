@@ -26,6 +26,6 @@ public class Order implements Serializable {
 
     private Integer status;
 
-    @Column(name = "create_time", insertable = false, updatable = false)
+    @Column( insertable = false, updatable = false)
     private LocalDateTime createTime;
 }
