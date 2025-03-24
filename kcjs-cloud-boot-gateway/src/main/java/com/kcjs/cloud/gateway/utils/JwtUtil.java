@@ -1,6 +1,7 @@
 package com.kcjs.cloud.gateway.utils;
 
 import com.alibaba.fastjson2.JSON;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Encoders;
@@ -33,11 +34,12 @@ public class JwtUtil {
 
     // 解析 JWT
     public  String parseToken(String token) {
-        return Jwts.parser()
-                .setSigningKey(SECRET)
+        SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
                 .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+                .getBody().getSubject();
     }
 
     private static String getSigningKey() {

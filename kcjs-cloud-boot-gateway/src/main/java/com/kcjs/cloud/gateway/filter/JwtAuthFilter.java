@@ -1,5 +1,6 @@
 package com.kcjs.cloud.gateway.filter;
 
+import com.kcjs.cloud.gateway.utils.JwtUtil;
 import com.kcjs.cloud.oracle.pojo.LoginRequest;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -33,6 +34,7 @@ public class JwtAuthFilter implements WebFilter {
     @Value("${jwt.secret}")
     private String SECRET;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final JwtUtil jwtUtil;
 
 
 
@@ -55,14 +57,7 @@ public class JwtAuthFilter implements WebFilter {
         try {
             // 解析 JWT
             String token = authHeader.substring(7);
-            SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-
-            String uuid = claims.getSubject();
+            String uuid = jwtUtil.parseToken(token);
             String redisKey = "login_tokens:" + uuid;
 
             // 2. 获取用户信息
