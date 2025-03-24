@@ -22,11 +22,11 @@ public class JwtUtil {
 
 
     // 生成 JWT
-    public  String generateToken(String username) {
+    public  String generateToken(String uuid) {
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(uuid)
                 .setIssuedAt(new Date()) // 签发时间
-                .setExpiration(new Date(System.currentTimeMillis() + 3600000)) // 1 小时过期
+                //.setExpiration(new Date(System.currentTimeMillis() + 3600000)) // 1 小时过期
                 .signWith(SignatureAlgorithm.HS256, SECRET)
                 .compact();
     }

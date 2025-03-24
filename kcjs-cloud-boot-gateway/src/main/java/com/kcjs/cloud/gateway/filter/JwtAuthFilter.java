@@ -1,28 +1,40 @@
 package com.kcjs.cloud.gateway.filter;
 
+import com.kcjs.cloud.oracle.pojo.LoginRequest;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.lang.NonNullApi;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 
 @Component
+@RequiredArgsConstructor
 public class JwtAuthFilter implements WebFilter {
     @Value("${jwt.secret}")
     private String SECRET;
+    private final RedisTemplate<String, Object> redisTemplate;
+
+
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
@@ -43,13 +55,30 @@ public class JwtAuthFilter implements WebFilter {
         try {
             // 解析 JWT
             String token = authHeader.substring(7);
-            Claims claims = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token).getBody();
-            //System.out.println("当前用户：" + claims.getSubject());
+            SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            String uuid = claims.getSubject();
+            String redisKey = "login_tokens:" + uuid;
+
+            // 2. 获取用户信息
+            LoginRequest loginUser = (LoginRequest) redisTemplate.opsForValue().get(redisKey);
+
+            if (loginUser != null) {
+                // 3. 刷新有效期（滑动过期）
+                redisTemplate.expire(redisKey, 30, TimeUnit.MINUTES);
+            }else{
+                return unauthorizedResponse(exchange, "Token 已过期");
+            }
 
             // 可将用户信息添加到请求头，传递给微服务
             ServerHttpRequest mutatedRequest = exchange.getRequest()
                     .mutate()
-                    .header("X-User", claims.getSubject()) // 传递用户信息
+                    .header("X-User", loginUser.getUsername())
                     .build();
             return chain.filter(exchange.mutate().request(mutatedRequest).build());
         } catch (ExpiredJwtException e) {
