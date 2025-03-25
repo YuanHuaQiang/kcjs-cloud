@@ -21,14 +21,14 @@ public class JwtUtil {
     private String SECRET;
 
 
-
     // 生成 JWT
     public  String generateToken(String uuid) {
+        SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
         return Jwts.builder()
-                .setSubject(uuid)
-                .setIssuedAt(new Date()) // 签发时间
-                //.setExpiration(new Date(System.currentTimeMillis() + 3600000)) // 1 小时过期
-                .signWith(SignatureAlgorithm.HS256, SECRET)
+                .setSubject(uuid)  // 设置主题（主体）
+                .setIssuedAt(new Date()) // 设置签发时间
+                //.expiration(new Date(System.currentTimeMillis() + 3600000)) // 1 小时过期（可解开）
+                .signWith(key) // 推荐的签名方式
                 .compact();
     }
 

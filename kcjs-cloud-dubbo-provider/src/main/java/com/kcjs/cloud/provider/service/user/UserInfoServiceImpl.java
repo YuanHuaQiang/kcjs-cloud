@@ -2,6 +2,7 @@ package com.kcjs.cloud.provider.service.user;
 
 
 import com.kcjs.cloud.api.user.UserInfoService;
+import com.kcjs.cloud.exception.BusinessException;
 import com.kcjs.cloud.mysql.pojo.UserInfo;
 import com.kcjs.cloud.mysql.repository.UserInfoRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class UserInfoServiceImpl implements UserInfoService {
             return optional.get();
         } else {
             // 可以抛一个明确的异常，或者返回 null、封装成业务响应
-            throw new RuntimeException("用户ID不存在");
+            throw new BusinessException("用户ID不存在");
         }
     }
 

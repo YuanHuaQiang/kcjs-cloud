@@ -23,7 +23,7 @@ public class AccountServiceImpl implements AccountService {
     public void decrease(Long userId, BigDecimal amount) {
         Account account = accountRepository.findByUserId(userId);
         if (account == null) {
-//            throw new RuntimeException("账户不存在");
+//            throw new BusinessException("账户不存在");
             account = new Account();
             account.setUserId(userId);
             account.setResidue(BigDecimal.valueOf(RandomGenerator.getDefault().nextDouble(1000)));
