@@ -3,6 +3,7 @@ package com.kcjs.cloud.provider.config;
 import com.zaxxer.hikari.HikariDataSource;
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
@@ -23,6 +24,7 @@ import javax.sql.DataSource;
         entityManagerFactoryRef = "mysqlEntityManagerFactory",
         transactionManagerRef = "mysqlTransactionManager"
 )
+@EntityScan(basePackages = "com.kcjs.cloud.mysql.pojo")
 public class MysqlJpaConfig {
 
     @Bean(name = "mysqlDataSource")
