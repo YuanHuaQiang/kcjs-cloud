@@ -17,6 +17,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -31,10 +32,11 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
     private final RedissonClient redissonClient;
     private final RabbitTemplate rabbitTemplate;
 
+    private final ExecutorService seckillExecutor;
+
     private static final String STOCK_KEY = "seckill:stock:1001";
     private static final String TIME_WINDOW_KEY_PREFIX = "seckill:time-window:";
     private static final long TIME_WINDOW_DURATION = 60; // 时间窗口持续时间，单位秒
-
     @PostConstruct
     public void init() {
         redisTemplate.opsForValue().set(STOCK_KEY, "2000");
@@ -75,10 +77,11 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
             redisTemplate.opsForValue().set(timeWindowKey, "1");
             redisTemplate.expire(timeWindowKey, TIME_WINDOW_DURATION, TimeUnit.SECONDS);
 
-
-            String messageId = UUID.randomUUID().toString();
-            CorrelationData correlationData = new CorrelationData(messageId);
-            rabbitTemplate.convertAndSend(RabbitMQConfig.NORMAL_EXCHANGE, STOCK_KEY, userId+":"+1001,correlationData);
+            seckillExecutor.execute(()->{
+                String messageId = UUID.randomUUID().toString();
+                CorrelationData correlationData = new CorrelationData(messageId);
+                rabbitTemplate.convertAndSend(RabbitMQConfig.NORMAL_EXCHANGE, STOCK_KEY, userId+":"+1001,correlationData);
+            });
 
             log.info("用户 {} 秒杀成功，剩余库存：{}", userId, stock - 1);
             return Result.success("恭喜秒杀成功！");
