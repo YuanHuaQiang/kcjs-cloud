@@ -70,4 +70,35 @@ public class ThreadPoolConfig {
             return thread;
         }
     }
+
+    public static void main(String[] args) {
+        // 定义任务逻辑
+        Callable<String> task = () -> {
+            // 模拟任务执行
+            Thread.sleep(2100);
+            return "Task Completed";
+        };
+
+        // 创建线程池
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+        try {
+            // 提交任务并获取 Future 对象
+            Future<String> future = executorService.submit(task);
+
+            // 获取任务结果，设置超时时间为 2 秒
+            String result = future.get(2, TimeUnit.SECONDS);
+            System.out.println(result);
+
+        } catch (InterruptedException e) {
+            System.err.println("线程被中断: " + e.getMessage());
+        } catch (ExecutionException e) {
+            System.err.println("任务执行失败: " + e.getCause().getMessage());
+        } catch (TimeoutException e) {
+            System.err.println("任务超时: " + e.getMessage());
+        } finally {
+            // 关闭线程池
+            executorService.shutdown();
+        }
+    }
 }
