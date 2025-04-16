@@ -5,6 +5,7 @@ import com.kcjs.cloud.api.order.OrderService;
 import com.kcjs.cloud.api.storage.StorageService;
 import com.kcjs.cloud.exception.BusinessException;
 import com.kcjs.cloud.mq.config.RabbitMQConfig;
+import com.kcjs.cloud.mq.service.seckill.SeckillConsumerService;
 import com.kcjs.cloud.mysql.pojo.Order;
 import com.rabbitmq.client.Channel;
 import io.seata.spring.annotation.GlobalTransactional;
@@ -28,53 +29,27 @@ import java.util.random.RandomGenerator;
 @Service
 public class SeckillRabbitConsumerService {
 
-    @DubboReference
-    private StorageService storageService;
-    @DubboReference
-    private OrderService orderService;
-    @DubboReference
-    private AccountService accountService;
+    @Autowired
+    private SeckillConsumerService seckillConsumerService;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
-
     /**
-     * 使用mq作为全局事物的入口，需要手动处理对库存的还原
-     * @param message
-     * @param channel
-     * @throws Exception
+     * 监听RabbitMQ中的消息并进行消费
+     * 该方法标注了@RabbitListener注解，用于指定监听的队列
+     * 同时使用了@Retryable注解，配置了重试策略，以处理消费失败的情况
+     *
+     * @param message 消息对象，包含消息体和属性等信息
+     * @param channel AMQP通道，用于执行消息的确认操作
+     * @throws Exception 如果消息消费过程中发生异常
      */
     @RabbitListener(queues = RabbitMQConfig.NORMAL_QUEUE)
     @Retryable(maxAttempts = 2,backoff = @Backoff(delay = 10, multiplier = 2))
-    @GlobalTransactional(name = "seckill-global-tx", rollbackFor = Exception.class)
     public void consume(Message message, Channel channel) throws Exception {
         String msg = new String(message.getBody(), StandardCharsets.UTF_8);
         System.out.println("接收到消息：" + msg);
 
-        String[] split = msg.split(":");
-        String userId = split[0];
-        String productId = split[1];
-
-        BigDecimal amount = BigDecimal.valueOf(RandomGenerator.getDefault().nextDouble(100, 1000));
-        //本应调用其他服务的接口，这里直接调用provider模块
-        // 秒杀成功继续业务
-        storageService.decrease(Long.valueOf(productId), 1);
-
-        Order order = new Order();
-        order.setUserId(Long.valueOf(userId));
-        order.setProductId(Long.valueOf(productId));
-        order.setCount(1);
-        order.setStatus(0);//待支付订单
-        order.setAmount(amount);
-        order = orderService.saveOrder(order);//若为先创建后支付模式则扣库存和创建订单不需要事物管理
-
-
-        //不走事务
-        accountService.decrease(Long.valueOf(userId), amount);
-
-        order.setStatus(1);//若余额支付成功，则修改订单状态为已支付
-        orderService.saveOrder(order);
-
+        seckillConsumerService.consumer(msg);
         // 正常处理
         channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
     }
