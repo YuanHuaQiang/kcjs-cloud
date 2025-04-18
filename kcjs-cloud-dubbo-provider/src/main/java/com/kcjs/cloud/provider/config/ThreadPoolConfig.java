@@ -100,5 +100,14 @@ public class ThreadPoolConfig {
             // 关闭线程池
             executorService.shutdown();
         }
+
+        CompletableFuture<Void> f1 = CompletableFuture.runAsync(() -> System.out.println("f1"));
+        CompletableFuture<Void> f2 = CompletableFuture.runAsync(() -> System.out.println("f2"));
+        CompletableFuture<Void> f3 = CompletableFuture.runAsync(() -> System.out.println("f3"));
+
+        CompletableFuture.allOf(f1, f2, f3).join(); // 等待全部完成
     }
+
+
+
 }
