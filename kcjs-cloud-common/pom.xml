@@ -11,7 +11,7 @@
 
     <artifactId>kcjs-cloud-common</artifactId>
 
-    <dependencies><!--	SM算法包	-->
+    <dependencies>
 
 
         <!-- 自定义验证注解 -->
@@ -93,6 +93,11 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
