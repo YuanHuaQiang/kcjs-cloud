@@ -255,11 +255,11 @@
                 <version>2.0.0</version>
             </dependency>
 
-            <dependency>
+            <!--<dependency>
                 <groupId>org.apache.shardingsphere</groupId>
                 <artifactId>shardingsphere-jdbc-core</artifactId>
                 <version>5.4.1</version>
-            </dependency>
+            </dependency>-->
         </dependencies>
 
 
