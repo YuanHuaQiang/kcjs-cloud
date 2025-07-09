@@ -1,6 +1,8 @@
-masterSlaveServersConfig:
-  masterAddress: "redis://localhost:6379"
-  slaveAddresses:
-    - "redis://localhost:6380"
-  password: "123456"
+sentinelServersConfig:
+  sentinelAddresses:
+    - "redis://127.0.0.1:26379"
+    - "redis://127.0.0.1:26380"
+    - "redis://127.0.0.1:26381"
+  masterName: redis-master
   database: 0
+  password: 123456789
