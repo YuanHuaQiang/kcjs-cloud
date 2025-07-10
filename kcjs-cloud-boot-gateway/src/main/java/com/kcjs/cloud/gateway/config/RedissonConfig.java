@@ -15,7 +15,7 @@ import java.net.InetSocketAddress;
 @Configuration
 public class RedissonConfig {
 
-    @Bean
+    /*@Bean
     public RedissonClient redissonClient() throws IOException {
 
         // 👇 从 YAML 配置加载
@@ -34,5 +34,5 @@ public class RedissonConfig {
                 });
 
         return Redisson.create(config);
-    }
+    }*/
 }
