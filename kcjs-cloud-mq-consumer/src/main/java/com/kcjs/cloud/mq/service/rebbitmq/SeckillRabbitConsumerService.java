@@ -44,7 +44,7 @@ public class SeckillRabbitConsumerService {
      * @throws Exception 如果消息消费过程中发生异常
      */
     @RabbitListener(queues = RabbitMQConfig.NORMAL_QUEUE)
-    @Retryable(maxAttempts = 2,backoff = @Backoff(delay = 10, multiplier = 2))
+    @Retryable(maxAttempts = 2,backoff = @Backoff(delay = 2000, multiplier = 2))
     public void consume(Message message, Channel channel) throws Exception {
         String msg = new String(message.getBody(), StandardCharsets.UTF_8);
         System.out.println("接收到消息：" + msg);
