@@ -76,12 +76,12 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Override
     public boolean addUser(UserInfo userInfo) {
-        userInfoRepository.save(userInfo);
+        UserInfo save = userInfoRepository.save(userInfo);
 
         String bloomName = "bloom:user:id";
         RBloomFilter<Long> bloomFilter = redissonClient.getBloomFilter(bloomName);
 
-        bloomFilter.add(userInfo.getId());
+        bloomFilter.add(save.getId());
         return true;
     }
 }
