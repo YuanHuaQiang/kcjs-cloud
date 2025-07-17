@@ -2,8 +2,10 @@ package com.kcjs.cloud.provider.service.seckill;
 
 import com.kcjs.cloud.api.RedissonSeckillService;
 import com.kcjs.cloud.api.storage.StorageService;
+import com.kcjs.cloud.api.user.UserInfoService;
 import com.kcjs.cloud.exception.BusinessException;
 import com.kcjs.cloud.provider.config.RabbitMQConfig;
+import com.kcjs.cloud.provider.service.user.UserInfoServiceImpl;
 import com.kcjs.cloud.result.Result;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
 
 
     private final StorageService storageService;
+    private final UserInfoService userInfoService;
 
     private final StringRedisTemplate redisTemplate;
     private final RedissonClient redissonClient;
@@ -37,6 +40,7 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
     private static final String STOCK_KEY = "seckill:stock:1001";
     private static final String TIME_WINDOW_KEY_PREFIX = "seckill:time-window:";
     private static final long TIME_WINDOW_DURATION = 60; // 时间窗口持续时间，单位秒
+
     @PostConstruct
     public void init() {
         redisTemplate.opsForValue().set(STOCK_KEY, "2000");
@@ -46,6 +50,11 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
     @Override
     @Transactional
     public Result<String> seckillProduct(Long userId) {
+        boolean b = userInfoService.mightContainUserId(userId);
+        if (!b){
+            return Result.fail("用户不存在");
+        }
+
         RLock lock = redissonClient.getLock("lock:product:1001");
 
         try {

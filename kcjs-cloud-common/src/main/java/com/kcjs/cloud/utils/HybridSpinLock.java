@@ -40,4 +40,25 @@ public class HybridSpinLock {
             }
         }
     }
+
+    static HybridSpinLock lock = new HybridSpinLock();
+
+    public static void main(String[] args) {
+        Runnable task = () -> {
+            lock.lock();
+            try {
+                System.out.println(Thread.currentThread().getName() + " 干活中");
+                Thread.sleep(500); // 模拟工作
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                System.out.println(Thread.currentThread().getName() + " 干完了");
+                lock.unlock();
+            }
+        };
+
+        for (int i = 0; i < 10; i++) {
+            new Thread(task, "线程-" + i).start();
+        }
+    }
 }
