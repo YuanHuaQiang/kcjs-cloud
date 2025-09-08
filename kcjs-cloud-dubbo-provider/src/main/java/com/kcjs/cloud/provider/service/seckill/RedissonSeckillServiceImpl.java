@@ -15,9 +15,12 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -49,60 +52,43 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
 
     @Override
     @Transactional
-    public Result<String> seckillProduct(Long userId) {
-        boolean b = userInfoService.mightContainUserId(userId);
-        if (!b){
-            return Result.fail("用户不存在");
-        }
+    public Result<String> seckillProduct(Long userId, Long productId) {
+        DefaultRedisScript<Long> script = new DefaultRedisScript<>();
+        script.setLocation(new ClassPathResource("lua/seckill.lua"));
+        script.setResultType(Long.class);
 
-        RLock lock = redissonClient.getLock("lock:product:1001");
+        String stockKey = "seckill:stock:" + productId;
+        String userKey = "seckill:users:" + productId;
 
-        try {
-            // 尝试加锁，等待2秒，锁自动释放时间10秒
-            boolean locked = lock.tryLock(2, 10, TimeUnit.SECONDS);
+        Long result = redisTemplate.execute(
+                script,
+                Arrays.asList(stockKey, userKey),
+                userId.toString(),
+                productId.toString()
+        );
 
-            if (!locked) {
-                return Result.fail("系统繁忙，请稍后重试");
-            }
-
-            // 检查时间窗口
-            String timeWindowKey = TIME_WINDOW_KEY_PREFIX + userId;
-            if (Boolean.TRUE.equals(redisTemplate.hasKey(timeWindowKey))) {
-                log.info("用户 {} 在时间窗口内已秒杀过", userId);
-                return Result.fail("您已秒杀过，请稍后再试");
-            }
-
-            String stockStr = redisTemplate.opsForValue().get(STOCK_KEY);
-            int stock = stockStr == null ? 0 : Integer.parseInt(stockStr);
-
-            if (stock <= 0) {
-                log.info("用户 {} 库存不足", userId);
-                return Result.fail("库存不足");
-            }
-
-            // 使用原子操作减少库存
-            redisTemplate.opsForValue().decrement(STOCK_KEY);
-            // 设置时间窗口
-            redisTemplate.opsForValue().set(timeWindowKey, "1");
-            redisTemplate.expire(timeWindowKey, TIME_WINDOW_DURATION, TimeUnit.SECONDS);
-
-            seckillExecutor.execute(()->{
-                String messageId = UUID.randomUUID().toString();
-                CorrelationData correlationData = new CorrelationData(messageId);
-                rabbitTemplate.convertAndSend(RabbitMQConfig.NORMAL_EXCHANGE, STOCK_KEY, userId+":"+1001,correlationData);
-            });
-
-            log.info("用户 {} 秒杀成功，剩余库存：{}", userId, stock - 1);
-            return Result.success("恭喜秒杀成功！");
-
-        } catch (InterruptedException e) {
-            log.error("秒杀过程中发生中断", e);
-            Thread.currentThread().interrupt(); // 重新设置中断状态
+        if (result == null) {
             return Result.fail("系统异常");
-        } finally {
-            if (lock.isHeldByCurrentThread()) {
-                lock.unlock();
-            }
         }
+
+        if (result == -1L) {
+            return Result.fail("您已秒杀过");
+        } else if (result == 0L) {
+            return Result.fail("库存不足");
+        }
+
+        // 成功就异步落单
+        seckillExecutor.execute(() -> {
+            String messageId = UUID.randomUUID().toString();
+            CorrelationData correlationData = new CorrelationData(messageId);
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.NORMAL_EXCHANGE,
+                    "seckill.order",
+                    userId + ":" + productId,
+                    correlationData
+            );
+        });
+
+        return Result.success("恭喜秒杀成功！");
     }
 }

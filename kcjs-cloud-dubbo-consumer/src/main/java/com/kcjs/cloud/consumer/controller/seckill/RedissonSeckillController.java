@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/redisson/seckill")
@@ -25,7 +26,7 @@ public class RedissonSeckillController {
 
 
     @GetMapping("/buy")
-    public Result<String> seckill(@RequestParam Long userId) {
-        return  redissonSeckillService.seckillProduct(userId);
+    public Result<String> seckill(@RequestParam Long userId,@RequestParam Long productId) {
+        return  redissonSeckillService.seckillProduct(userId, Optional.ofNullable(productId).orElse(1001L));
     }
 }

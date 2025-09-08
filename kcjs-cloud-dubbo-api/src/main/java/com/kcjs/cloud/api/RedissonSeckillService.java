@@ -4,5 +4,5 @@ import com.kcjs.cloud.result.Result;
 
 public interface RedissonSeckillService {
 
-     Result<String> seckillProduct(Long userId);
+     Result<String> seckillProduct(Long userId, Long productId);
 }
