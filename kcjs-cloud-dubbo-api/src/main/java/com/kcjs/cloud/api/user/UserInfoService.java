@@ -8,6 +8,8 @@ import java.util.List;
 
 public interface UserInfoService {
 
+    boolean mightContainUserId(Long userId);
+
     UserInfo getUserById(Long id);
 
     List<UserInfo> listUsers();
