@@ -60,16 +60,12 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
         String stockKey = "seckill:stock:" + productId;
         String userKey = "seckill:users:" + productId;
 
-        Long result = redisTemplate.execute(
+        long result = redisTemplate.execute(
                 script,
                 Arrays.asList(stockKey, userKey),
                 userId.toString(),
                 productId.toString()
         );
-
-        if (result == null) {
-            return Result.fail("系统异常");
-        }
 
         if (result == -1L) {
             return Result.fail("您已秒杀过");
@@ -79,8 +75,8 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
 
         // 成功就异步落单
         seckillExecutor.execute(() -> {
-            String messageId = UUID.randomUUID().toString();
-            CorrelationData correlationData = new CorrelationData(messageId);
+            String bizKey = "seckill:" + userId + ":" + productId;
+            CorrelationData correlationData = new CorrelationData(bizKey);
             rabbitTemplate.convertAndSend(
                     RabbitMQConfig.NORMAL_EXCHANGE,
                     "seckill.order",
