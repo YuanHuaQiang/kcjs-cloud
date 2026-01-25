@@ -24,14 +24,21 @@ public class ThreadPoolConfig {
          *
          */
 
+        int queueCapacity = 200;
         return new ThreadPoolExecutor(
                 corePoolSize,
                 maximumPoolSize,
                 keepAliveTime,
                 TimeUnit.SECONDS,
-                new SynchronousQueue<>(), //使用 SynchronousQueue，避免任务堆积，直接交由线程处理。
+                new LinkedBlockingQueue<>(queueCapacity),
                 new NamedThreadFactory("seckill-executor-"),
-                new ThreadPoolExecutor.CallerRunsPolicy() // 采用调用者运行策略进行限流
+                new ThreadPoolExecutor.DiscardPolicy() {
+                    @Override
+                    public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+                        log.warn("秒杀线程池任务被拒绝，当前队列大小: {}, 活跃线程数: {}, 总线程数: {}", 
+                                executor.getQueue().size(), executor.getActiveCount(), executor.getPoolSize());
+                    }
+                }
         );
     }
 
