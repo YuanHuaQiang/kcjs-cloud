@@ -1,20 +1,11 @@
-package com.kcjs.cloud.mq.service.rebbitmq;
+package com.kcjs.cloud.mq.service.consumers;
 
-import com.kcjs.cloud.api.account.AccountService;
-import com.kcjs.cloud.api.order.OrderService;
-import com.kcjs.cloud.api.storage.StorageService;
-import com.kcjs.cloud.exception.BusinessException;
 import com.kcjs.cloud.mq.config.RabbitMQConfig;
 import com.kcjs.cloud.mq.service.seckill.SeckillConsumerService;
-import com.kcjs.cloud.mysql.pojo.Order;
 import com.rabbitmq.client.Channel;
-import io.seata.spring.annotation.GlobalTransactional;
-import org.apache.commons.lang.RandomStringUtils;
-import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
@@ -22,12 +13,10 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.util.random.RandomGenerator;
 
 @Service
-public class SeckillRabbitConsumerService {
+public class SeckillRabbitConsumers {
 
     @Autowired
     private SeckillConsumerService seckillConsumerService;
@@ -43,7 +32,7 @@ public class SeckillRabbitConsumerService {
      * @param channel AMQP通道，用于执行消息的确认操作
      * @throws Exception 如果消息消费过程中发生异常
      */
-    @RabbitListener(queues = RabbitMQConfig.NORMAL_QUEUE)
+    @RabbitListener(queues = RabbitMQConfig.SECKILL_QUEUE)
     @Retryable(maxAttempts = 2,backoff = @Backoff(delay = 2000, multiplier = 2))
     public void consume(Message message, Channel channel) throws Exception {
         String msg = new String(message.getBody(), StandardCharsets.UTF_8);
@@ -72,7 +61,7 @@ public class SeckillRabbitConsumerService {
      * @param channel
      * @throws Exception
      */
-    @RabbitListener(queues = RabbitMQConfig.DLX_QUEUE)
+    @RabbitListener(queues = RabbitMQConfig.SECKILL_DLX_QUEUE)
     public void dlxConsume(Message message, Channel channel) throws Exception {
         String msg = new String(message.getBody(), StandardCharsets.UTF_8);
         System.out.println("死信队列收到消息：" + msg);
