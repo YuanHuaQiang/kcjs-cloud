@@ -43,7 +43,7 @@ public class SeckillConsumerServiceImpl implements SeckillConsumerService {
         log.info("开始处理秒杀消息: {}", msg);
         if (msg == null || !msg.contains(":")) {
             log.error("消息格式错误: {}", msg);
-            return;
+            throw new IllegalArgumentException("消息格式错误: " + msg);
         }
 
         String[] split = msg.split(":");
@@ -64,7 +64,7 @@ public class SeckillConsumerServiceImpl implements SeckillConsumerService {
         Boolean isNew = stringRedisTemplate.opsForValue().setIfAbsent(idempotencyKey, "processing", 10, TimeUnit.MINUTES);
         if (!Boolean.TRUE.equals(isNew)) {
             // 如果是 processing，说明正在处理中
-            throw new RuntimeException("消息正在处理中或重复消费: " + msg);
+            throw new IllegalStateException("消息正在处理中或重复消费: " + msg);
         }
 
         try {
