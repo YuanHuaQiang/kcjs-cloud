@@ -10,9 +10,9 @@ if redis.call("sismember", KEYS[2], ARGV[1]) == 1 then
     return -1
 end
 
--- 2. 判断库存
-local stock = tonumber(redis.call("get", KEYS[1]))
-if stock <= 0 then
+-- 2. 判断库存 (添加nil检查)
+local stock = redis.call("get", KEYS[1])
+if not stock or tonumber(stock) <= 0 then
     return 0
 end
 

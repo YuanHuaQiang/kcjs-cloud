@@ -74,12 +74,6 @@
 
             <dependency>
                 <groupId>com.kcjs.cloud</groupId>
-                <artifactId>kcjs-cloud-dubbo-provider</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.kcjs.cloud</groupId>
                 <artifactId>kcjs-cloud-common</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
@@ -253,6 +247,12 @@
                 <groupId>io.seata</groupId>
                 <artifactId>seata-spring-boot-starter</artifactId>
                 <version>2.0.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-runtime</artifactId>
+                <version>4.13.0</version>
             </dependency>
 
             <!--<dependency>

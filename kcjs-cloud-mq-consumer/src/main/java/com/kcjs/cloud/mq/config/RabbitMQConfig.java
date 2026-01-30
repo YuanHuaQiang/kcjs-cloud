@@ -34,7 +34,7 @@ public class RabbitMQConfig {
 
     @Bean
     public Binding seckillBinding() {
-        return BindingBuilder.bind(seckillQueue()).to(seckillExchange()).with("seckill:stock:1001");
+        return BindingBuilder.bind(seckillQueue()).to(seckillExchange()).with("seckill.order");
     }
 
     // ==================== 秒杀场景 - 死信队列 ====================

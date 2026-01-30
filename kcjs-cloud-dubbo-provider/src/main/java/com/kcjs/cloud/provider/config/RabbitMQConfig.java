@@ -1,5 +1,7 @@
 package com.kcjs.cloud.provider.config;
 
+import com.kcjs.cloud.mysql.pojo.MessageLog;
+import com.kcjs.cloud.mysql.repository.MessageLogRepository;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -28,7 +30,7 @@ public class RabbitMQConfig {
                 // 指定死信交换机
                 .withArgument("x-dead-letter-exchange", DLX_EXCHANGE)
                 // 可选：指定死信路由 key
-                .withArgument("x-dead-letter-routing-key", "dlx.routingkey")
+                .withArgument("x-dead-letter-routing-key", "seckill.dlx.routingkey")
                 // 可选：TTL（消息超时测试）
                 .withArgument("x-message-ttl", 10000)  // 10秒超时
                 .build();
@@ -36,7 +38,7 @@ public class RabbitMQConfig {
 
     @Bean
     public Binding normalBinding() {
-        return BindingBuilder.bind(normalQueue()).to(normalExchange()).with("seckill:stock:1001");
+        return BindingBuilder.bind(normalQueue()).to(normalExchange()).with("seckill.order");
     }
 
     // ==================== 死信队列 ====================
@@ -53,7 +55,7 @@ public class RabbitMQConfig {
 
     @Bean
     public Binding dlxBinding() {
-        return BindingBuilder.bind(dlxQueue()).to(dlxExchange()).with("dlx.routingkey");
+        return BindingBuilder.bind(dlxQueue()).to(dlxExchange()).with("seckill.dlx.routingkey");
     }
 
 
@@ -63,7 +65,7 @@ public class RabbitMQConfig {
      * @return
      */
     @Bean
-    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory, MessageLogRepository messageLogRepository) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
 
         // 开启 Publisher Confirm 模式（Spring Boot 2.2+）
@@ -71,10 +73,23 @@ public class RabbitMQConfig {
             String msgId = correlationData != null ? correlationData.getId() : "无ID";
             if (ack) {
                 System.out.println("【ConfirmCallback】发送成功 messageId = " + msgId);
-                // TODO 更新数据库 message_log 状态为已发送
+                if (correlationData != null) {
+                    MessageLog messageLog = messageLogRepository.findByCorrelationId(correlationData.getId());
+                    if (messageLog != null) {
+                        messageLog.setStatus(1); // Sent Success
+                        messageLog.setSendTime(System.currentTimeMillis());
+                        messageLogRepository.save(messageLog);
+                    }
+                }
             } else {
                 System.out.println("【ConfirmCallback】发送失败 messageId = " + msgId + "，原因：" + cause);
-                // TODO 发送失败，做补偿处理
+                if (correlationData != null) {
+                    MessageLog messageLog = messageLogRepository.findByCorrelationId(correlationData.getId());
+                    if (messageLog != null) {
+                        messageLog.setErrorMessage("ConfirmCallback failed: " + cause);
+                        messageLogRepository.save(messageLog);
+                    }
+                }
             }
         });
 

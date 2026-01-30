@@ -18,8 +18,8 @@ public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
 
-    @Transactional
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void decrease(Long userId, BigDecimal amount) {
         Account account = accountRepository.findByUserId(userId);
         if (account == null) {

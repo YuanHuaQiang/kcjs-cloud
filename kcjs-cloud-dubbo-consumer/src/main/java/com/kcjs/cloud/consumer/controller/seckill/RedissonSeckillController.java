@@ -26,7 +26,7 @@ public class RedissonSeckillController {
 
 
     @GetMapping("/buy")
-    public Result<String> seckill(@RequestParam Long userId,@RequestParam Long productId) {
-        return  redissonSeckillService.seckillProduct(userId, Optional.ofNullable(productId).orElse(1001L));
+    public Result<String> seckill(@RequestParam String userId,@RequestParam String productId) {
+        return  redissonSeckillService.seckillProduct(userId, productId);
     }
 }

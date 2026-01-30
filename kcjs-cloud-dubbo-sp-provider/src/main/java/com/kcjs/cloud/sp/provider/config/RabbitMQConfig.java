@@ -28,7 +28,7 @@ public class RabbitMQConfig {
                 // 指定死信交换机
                 .withArgument("x-dead-letter-exchange", DLX_EXCHANGE)
                 // 可选：指定死信路由 key
-                .withArgument("x-dead-letter-routing-key", "dlx.routingkey")
+                .withArgument("x-dead-letter-routing-key", "seckill.dlx.routingkey")
                 // 可选：TTL（消息超时测试）
                 .withArgument("x-message-ttl", 10000)  // 10秒超时
                 .build();
@@ -53,6 +53,6 @@ public class RabbitMQConfig {
 
     @Bean
     public Binding dlxBinding() {
-        return BindingBuilder.bind(dlxQueue()).to(dlxExchange()).with("dlx.routingkey");
+        return BindingBuilder.bind(dlxQueue()).to(dlxExchange()).with("seckill.dlx.routingkey");
     }
 }

@@ -10,6 +10,7 @@ import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.random.RandomGenerator;
 
 @DubboService
@@ -18,9 +19,20 @@ public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
 
-    @Transactional
     @Override
     public void decrease(Long userId, BigDecimal amount) {
+        if (userId == null) {
+            throw new BusinessException("用户ID不能为空");
+        }
+        if (amount == null) {
+            throw new BusinessException("扣减金额不能为空");
+        }
+        if (amount.signum() <= 0) {
+            throw new BusinessException("扣减金额必须大于0");
+        }
+        // 统一金额精度到两位小数
+        amount = amount.setScale(2, RoundingMode.HALF_UP);
+
         Account account = accountRepository.findByUserId(userId);
         if (account == null) {
 //            throw new BusinessException("账户不存在");
@@ -33,13 +45,9 @@ public class AccountServiceImpl implements AccountService {
         }
 
 
-        if (account.getResidue().compareTo(amount) < 0) {
+        int updated = accountRepository.atomicDecrease(userId, amount);
+        if (updated == 0) {
             throw new BusinessException("余额不足");
         }
-
-        account.setUsed(account.getUsed().add(amount));
-        account.setResidue(account.getResidue().subtract(amount));
-
-        accountRepository.save(account);
     }
 }

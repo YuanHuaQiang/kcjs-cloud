@@ -4,6 +4,8 @@ import com.kcjs.cloud.api.RedissonSeckillService;
 import com.kcjs.cloud.api.storage.StorageService;
 import com.kcjs.cloud.api.user.UserInfoService;
 import com.kcjs.cloud.exception.BusinessException;
+import com.kcjs.cloud.mysql.pojo.MessageLog;
+import com.kcjs.cloud.mysql.repository.MessageLogRepository;
 import com.kcjs.cloud.provider.config.RabbitMQConfig;
 import com.kcjs.cloud.provider.service.user.UserInfoServiceImpl;
 import com.kcjs.cloud.result.Result;
@@ -37,6 +39,7 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
     private final StringRedisTemplate redisTemplate;
     private final RedissonClient redissonClient;
     private final RabbitTemplate rabbitTemplate;
+    private final MessageLogRepository messageLogRepository;
 
     private final ExecutorService seckillExecutor;
 
@@ -52,7 +55,7 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
 
     @Override
     @Transactional
-    public Result<String> seckillProduct(Long userId, Long productId) {
+    public Result<String> seckillProduct(String userId, String productId) {
         DefaultRedisScript<Long> script = new DefaultRedisScript<>();
         script.setLocation(new ClassPathResource("lua/seckill.lua"));
         script.setResultType(Long.class);
@@ -60,31 +63,46 @@ public class RedissonSeckillServiceImpl implements RedissonSeckillService {
         String stockKey = "seckill:stock:" + productId;
         String userKey = "seckill:users:" + productId;
 
-        long result = redisTemplate.execute(
-                script,
-                Arrays.asList(stockKey, userKey),
-                userId.toString(),
-                productId.toString()
-        );
-
-        if (result == -1L) {
-            return Result.fail("您已秒杀过");
-        } else if (result == 0L) {
-            return Result.fail("库存不足");
-        }
-
-        // 成功就异步落单
-        seckillExecutor.execute(() -> {
-            String bizKey = "seckill:" + userId + ":" + productId;
-            CorrelationData correlationData = new CorrelationData(bizKey);
-            rabbitTemplate.convertAndSend(
-                    RabbitMQConfig.NORMAL_EXCHANGE,
-                    "seckill.order",
-                    userId + ":" + productId,
-                    correlationData
+        try {
+            Long result = redisTemplate.execute(
+                    script,
+                    Arrays.asList(stockKey, userKey),
+                    userId, productId
             );
-        });
 
-        return Result.success("恭喜秒杀成功！");
+            if (result == null) {
+                log.error("秒杀脚本返回null，userId: {}, productId: {}", userId, productId);
+                return Result.fail("秒杀失败，请重试");
+            }
+
+            if (result == -1L) {
+                return Result.fail("您已秒杀过");
+            } else if (result == 0L) {
+                return Result.fail("库存不足");
+            } else if (result != 1L) {  // 捕获意外返回值
+                log.error("秒杀脚本执行异常，返回值: {}，userId: {}, productId: {}", result, userId, productId);
+                return Result.fail("秒杀失败，请重试");
+            }
+
+            // 成功就保存消息到数据库，由定时任务发送
+            String bizKey = "seckill:" + userId + ":" + productId;
+            MessageLog messageLog = new MessageLog();
+            messageLog.setMessageBody(userId + ":" + productId);
+            messageLog.setStatus(0); // 0: Pending
+            messageLog.setRetryCount(0);
+            messageLog.setCreateTime(System.currentTimeMillis());
+            messageLog.setUpdateTime(System.currentTimeMillis());
+            messageLog.setMessageType("seckill");
+            messageLog.setCorrelationId(bizKey);
+            messageLog.setPriority(1);
+            messageLog.setIsProcessed(0);
+
+            messageLogRepository.save(messageLog);
+
+            return Result.success("恭喜秒杀成功！");
+        } catch (Exception e) {
+            log.error("执行秒杀Lua脚本异常，userId: {}, productId: {}", userId, productId, e);
+            return Result.fail("系统繁忙，请稍后再试");
+        }
     }
 }
